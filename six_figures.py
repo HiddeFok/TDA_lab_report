@@ -5,8 +5,10 @@ import numpy as np
 from sklearn import datasets
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import classification_report
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.model_selection import train_test_split
 
 from scipy.stats import multivariate_normal as mvn
 import matplotlib.pyplot as plt
@@ -113,8 +115,112 @@ def gen_six_figures(n: int, m: int, V: float):
     }
     return toy_shapes
 
+
+def do_training(PI_vectors_train, PI_vectors_test, y_H_train):
+    X_H_train = PI_vectors_train
+    X_H_test = PI_vectors_test
+
+    gnb = GaussianNB().fit(X_H_train, y_H_train.ravel())
+    lr = LogisticRegression(random_state=42, max_iter=1000).fit(X_H_train, y_H_train.ravel())
+
+    y_H_hat_km = gnb.predict(X_H_test)
+    y_H_hat_lr = lr.predict(X_H_test)
+    return y_H_hat_km, y_H_hat_lr
+
+def do_analysis(y_H, yhat1, yhat2, labels):
+    H1_report_km = classification_report(y_H.ravel(),
+                                         yhat1,
+                                         labels=list(range(6)),
+                                         target_names=list(labels.values()))
+    H1_report_lr = classification_report(y_H.ravel(),
+                                         yhat2,
+                                         labels=list(range(6)),
+                                         target_names=list(labels.values()))
+    print(H1_report_km)
+    print(H1_report_lr)
+    return H1_report_km, H1_report_lr
+
+
+def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="linear"):
+    """
+    Does the full PI analysis and some training
+    saves the results in the results folder
+    :param quality: resulution (int)
+    :param spread:  variance in smoothing (float)
+    :param kernel:  cdf to be used for smoothing (string: gaussian, laplace, lognorm, gamma)
+    :param weighting: weighting to be used (string: linear, pm_linear, logistic)
+    :return: reports for H0 and H1
+    """
+    pixels = quality * quality
+    PI_vectors_H0 = np.zeros((6 * m, pixels))
+    PI_vectors_H1 = np.zeros((6 * m, pixels))
+
+    target = np.zeros(6 * m)
+    labels = {i: shape for i, shape in enumerate(data)}
+    index = 0
+    print("Creating the PI images for the 6 figures")
+    for i in tqdm(range(6)):
+        shape = labels[i]
+        shape_data = data[shape]
+        for j in range(m):
+            pim_0 = PersImage(spread=spread,
+                              pixels=[quality, quality],
+                              kernel_type=kernel,
+                              weighting_type=weighting,
+                              verbose=False,
+                              specs={
+                                  "maxBD": 2,
+                                  "minBD": 0,
+                              })
+            pim_1 = PersImage(spread=spread,
+                              pixels=[quality, quality],
+                              kernel_type=kernel,
+                              weighting_type=weighting,
+                              verbose=False,
+                              specs={
+                                  "maxBD": 2,
+                                  "minBD": 0,
+                              })
+
+            PI_data = shape_data[j, :, :]
+            rips = Rips(verbose=False)
+            dgms = rips.fit_transform(PI_data)
+
+            PI_data_H0 = pim_0.transform(dgms[0])
+            PI_data_H1 = pim_1.transform(dgms[1])
+
+            PI_data_H1 = PI_data_H1.reshape(pixels)
+            PI_data_H0 = PI_data_H0.reshape(pixels)
+
+            # PI_data_H0 = PI_data_H0[:, None]
+            # PI_data_H1 = PI_data_H1[:, None]
+            #
+            target[index] = int(i)
+
+            PI_vectors_H0[index, :] = PI_data_H0
+            PI_vectors_H1[index, :] = PI_data_H1
+            index += 1
+
+    PI_vectors_H0_train, PI_vectors_H0_test, y_train_H0, y_test_H0 = train_test_split(PI_vectors_H0, target,
+                                                                                      test_size=0.33)
+    PI_vectors_H1_train, PI_vectors_H1_test, y_train_H1, y_test_H1 = train_test_split(PI_vectors_H1, target,
+                                                                                      test_size=0.33)
+
+    y_H0_hat_km, y_H0_hat_lr = do_training(PI_vectors_H0_train, PI_vectors_H0_test, y_train_H0)
+    y_H1_hat_km, y_H1_hat_lr = do_training(PI_vectors_H1_train, PI_vectors_H1_test, y_train_H1)
+
+    reports_H0_gnb, reports_H0_lr = do_analysis(y_test_H0, y_H0_hat_km, y_H0_hat_lr, labels)
+    reports_H1_gnb, reports_H1_lr = do_analysis(y_test_H1, y_H1_hat_km, y_H1_hat_lr, labels)
+
+    reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))
+    reports_H0_lr.to_csv("results/{}_{}_{}_{}_H0_lr.csv".format(quality, spread, kernel, weighting))
+    reports_H1_gnb.to_csv("results/{}_{}_{}_{}_H1_gnb.csv".format(quality, spread, kernel, weighting))
+    reports_H1_lr.to_csv("results/{}_{}_{}_{}_H1_lr.csv".format(quality, spread, kernel, weighting))
+
+    return reports_H0_gnb, reports_H0_lr, reports_H1_gnb, reports_H1_lr
+
 ## Now we apply Ripser and Persim to do the classification
-n, m, V = 150, 100, 0.2
+n, m, V = 150, 150, 0.1
 data = gen_six_figures(n, m, V)
 epsilon = 0.1
 ax_range = (0 - epsilon, 1 + epsilon)
@@ -137,7 +243,7 @@ for shape in data:
         ax.set_xlim(ax_range)
         ax.set_ylim(ax_range)
         ax.set_zlim(ax_range)
-        plt.savefig("{}_example.png".format(shape))
+        plt.savefig("figures/{}_example.png".format(shape))
     else:
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -151,101 +257,16 @@ for shape in data:
 
         ax.set_xlim(ax_range)
         ax.set_ylim(ax_range)
-        plt.savefig("{}_example.png".format(shape))
+        plt.savefig("figures/{}_example.png".format(shape))
 
 
-quality = 50
-pixels = quality * quality
-PI_vectors_H0 = np.zeros((6 * 100, pixels, 1))
-PI_vectors_H1 = np.zeros((6 * 100, pixels, 1))
-labels = {i: shape for i, shape in enumerate(data)}
-index = 0
-print("Creating the PI images for the 6 figures")
-for i in tqdm(range(6)):
-    shape = labels[i]
-    shape_data = data[shape]
-    for j in range(5):
-        pim_0 = PersImage(spread=0.1,
-                          pixels=[quality, quality],
-                          verbose=False,
-                          specs={
-                            "maxBD": 2,
-                            "minBD": 0,
-                  })
-        pim_1 = PersImage(spread=0.1,
-                          pixels=[quality, quality],
-                          verbose=False,
-                          specs={
-                            "maxBD": 2,
-                            "minBD": 0,
-                  })
+qualities = [5, 10, 25, 50]
+spreads = [0.05, 0.1, 0.2]
+kernels = ["gaussian", "lognorm", "laplace", "gamma"]
+weightings = ["linear", "logistic"]
 
-        PI_data = shape_data[j, :, :]
-        rips = Rips(verbose=False)
-        dgms = rips.fit_transform(PI_data)
-        PI_data_H0 = pim_0.transform(dgms[0])
-        ax = plt.subplot(131)
-        plt.title("PI for $H_1$\nwith 10x10 pixels")
-        pim_0.show(PI_data_H0, ax)
-
-        PI_data_H1 = pim_1.transform(dgms[1])
-
-        PI_data_H1 = PI_data_H1.reshape(pixels)
-        PI_data_H0 = PI_data_H0.reshape(pixels)
-
-        PI_data_H0 = PI_data_H0[:, None]
-        PI_data_H1 = PI_data_H1[:, None]
-
-        PI_data_H0[:, 0] = int(i)
-        PI_data_H1[:, 0] = int(i)
-
-        PI_vectors_H0[index, :, :] = PI_data_H0
-        PI_vectors_H1[index, :, :] = PI_data_H1
-        index += 1
-
-def do_clf_analysis(PI_vectors, mapping):
-
-    X_H = PI_vectors[:, :, 0]
-    y_H = PI_vectors[:, 0, :].astype(int)
-    kmeans = KMeans(n_clusters=6, random_state=42).fit(X_H)
-    lr = LogisticRegression(random_state=42).fit(X_H, y_H.ravel())
-
-    y_H_hat_km = kmeans.predict(X_H)
-    y_H_hat_lr = lr.predict(X_H)
-
-    mapper = lambda x: int(mapping[x])
-    vfunct = np.vectorize(mapper)
-    y_H_hat_km = vfunct(y_H_hat_km)
-
-
-    H1_report_km = classification_report(y_H.ravel(),
-                                         y_H_hat_km,
-                                         labels=list(range(6)),
-                                         target_names=list(labels.values()))
-    H1_report_lr = classification_report(y_H.ravel(),
-                                         y_H_hat_lr,
-                                         labels=list(range(6)),
-                                         target_names=list(labels.values()))
-    print(H1_report_km)
-    print(H1_report_lr)
-    return H1_report_km, H1_report_lr
-
-
-mapping_H0 = {
-    5: 0,
-    1: 1,
-    2: 2,
-    4: 3,
-    0: 4,
-    3: 5
-}
-reports_H0 = do_clf_analysis(PI_vectors_H0, mapping_H0)
-mapping_H1 = {
-    5: 0,
-    1: 1,
-    2: 2,
-    4: 3,
-    0: 4,
-    3: 5
-}
-reports_H1 = do_clf_analysis(PI_vectors_H1, mapping_H1)
+for quality in tqdm(qualities):
+    for spread in tqdm(spreads):
+        for kernel in tqdm(kernels):
+            for weighting in tqdm(weightings):
+                _, _, _, _ = do_full_run(data, quality, spread, kernel, weighting)
