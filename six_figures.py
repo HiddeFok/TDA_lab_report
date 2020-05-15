@@ -9,6 +9,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import classification_report
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
+import pandas as pd
 
 from scipy.stats import multivariate_normal as mvn
 import matplotlib.pyplot as plt
@@ -128,17 +129,24 @@ def do_training(PI_vectors_train, PI_vectors_test, y_H_train):
     return y_H_hat_km, y_H_hat_lr
 
 def do_analysis(y_H, yhat1, yhat2, labels):
-    H1_report_km = classification_report(y_H.ravel(),
+    report_km = classification_report(y_H.ravel(),
                                          yhat1,
                                          labels=list(range(6)),
-                                         target_names=list(labels.values()))
-    H1_report_lr = classification_report(y_H.ravel(),
+                                         target_names=list(labels.values()),
+                                         output_dict=True)
+    report_lr = classification_report(y_H.ravel(),
                                          yhat2,
                                          labels=list(range(6)),
-                                         target_names=list(labels.values()))
-    print(H1_report_km)
-    print(H1_report_lr)
-    return H1_report_km, H1_report_lr
+                                         target_names=list(labels.values()),
+                                         output_dict=True)
+
+    report_km_df = pd.DataFrame(report_km).transpose()
+    report_km_lr = pd.DataFrame(report_lr).transpose()
+
+    print(report_km_df)
+    print(report_km_lr)
+
+    return report_km_df, report_km_lr
 
 
 def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="linear"):
@@ -262,11 +270,15 @@ for shape in data:
 
 qualities = [5, 10, 25, 50]
 spreads = [0.05, 0.1, 0.2]
-kernels = ["gaussian", "lognorm", "laplace", "gamma"]
+kernels = ["gaussian", "laplace", "gamma"]
 weightings = ["linear", "logistic"]
 
 for quality in tqdm(qualities):
     for spread in tqdm(spreads):
         for kernel in tqdm(kernels):
             for weighting in tqdm(weightings):
-                _, _, _, _ = do_full_run(data, quality, spread, kernel, weighting)
+                try:
+                    _, _, _, _ = do_full_run(data, quality, spread, kernel, weighting)
+                except:
+                    print(quality, spread, kernel, weighting)
+                    pass
