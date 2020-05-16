@@ -165,8 +165,5 @@ for i in range(len(rs)):
     for j in tqdm(range(m)):
         x, y = np.random.uniform(size=2)
         data[i, j, :, :] = n_step_dynamic_system(n, x, y, r)
-        plt.figure(figsize=(9,3))
-        plt.scatter(data[i, j, :, 0], data[i, j, :, 1])
-        plt.savefig("figures/{}_dynamic.png".format(r))
 
 _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.005, kernel="gaussian", weighting="linear")
