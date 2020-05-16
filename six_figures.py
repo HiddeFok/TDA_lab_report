@@ -14,6 +14,7 @@ import pandas as pd
 from scipy.stats import multivariate_normal as mvn
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+
 from ripser import Rips
 from persim import PersImage
 
@@ -220,10 +221,10 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
     reports_H0_gnb, reports_H0_lr = do_analysis(y_test_H0, y_H0_hat_km, y_H0_hat_lr, labels)
     reports_H1_gnb, reports_H1_lr = do_analysis(y_test_H1, y_H1_hat_km, y_H1_hat_lr, labels)
 
-    reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))
-    reports_H0_lr.to_csv("results/{}_{}_{}_{}_H0_lr.csv".format(quality, spread, kernel, weighting))
-    reports_H1_gnb.to_csv("results/{}_{}_{}_{}_H1_gnb.csv".format(quality, spread, kernel, weighting))
-    reports_H1_lr.to_csv("results/{}_{}_{}_{}_H1_lr.csv".format(quality, spread, kernel, weighting))
+    # reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))
+    # reports_H0_lr.to_csv("results/{}_{}_{}_{}_H0_lr.csv".format(quality, spread, kernel, weighting))
+    # reports_H1_gnb.to_csv("results/{}_{}_{}_{}_H1_gnb.csv".format(quality, spread, kernel, weighting))
+    # reports_H1_lr.to_csv("results/{}_{}_{}_{}_H1_lr.csv".format(quality, spread, kernel, weighting))
 
     return reports_H0_gnb, reports_H0_lr, reports_H1_gnb, reports_H1_lr
 
@@ -277,8 +278,4 @@ for quality in tqdm(qualities):
     for spread in tqdm(spreads):
         for kernel in tqdm(kernels):
             for weighting in tqdm(weightings):
-                try:
-                    _, _, _, _ = do_full_run(data, quality, spread, kernel, weighting)
-                except:
-                    print(quality, spread, kernel, weighting)
-                    pass
+                _, _, _, _ = do_full_run(data, quality, spread, kernel, weighting)

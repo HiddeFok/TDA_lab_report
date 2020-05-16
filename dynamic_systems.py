@@ -16,6 +16,16 @@ from tqdm import tqdm
 from ripser import Rips
 from persim import PersImage
 
+def F(arr, r):
+    x = arr[0]
+    y = arr[1]
+    return np.array([x + r * y * (1 - y), y])
+
+def G(arr, r):
+    x = arr[0]
+    y = arr[1]
+    return np.array([x, y + r * x * (1 - x)])
+
 def n_step_dynamic_system(n, x, y, r):
     result = np.zeros((n, 2))
     result[0, :] = [x, y]
@@ -24,13 +34,21 @@ def n_step_dynamic_system(n, x, y, r):
         # y_step = r * (result[i - 1, 0] + np.sqrt(x_step))
         # x_step = result[i - 1, 0] + r * result[i - 1, 1] * (1 - result[i - 1, 1])
         # y_step = result[i - 1, 1] + r * result[i - 1, 0] * (1 - result[i - 1, 0])
-        x_step = result[i - 1, 0] * np.exp(r * (1 - result[i - 1, 1]))
-        y_step = result[i - 1, 0]
+        x_step, y_step = G(F(result[i-1, :], r), r)
+        # x_step = result[i - 1, 0] * np.exp(r * (1 - result[i - 1, 1]))
         x_step = x_step - np.floor(x_step)
         y_step = y_step - np.floor(y_step)
 
         result[i, :] = [x_step, y_step]
     return result
+
+
+x, y = np.random.uniform(size=2)
+
+results = n_step_dynamic_system(1000, x, y, 4.1)
+plt.scatter(results[:, 0], results[:, 1])
+plt.show()
+# y_step = result[i - 1, 0]
 
 def do_training(PI_vectors_train, PI_vectors_test, y_H_train):
     X_H_train = PI_vectors_train
