@@ -19,12 +19,15 @@ from persim import PersImage
 def F(arr, r):
     x = arr[0]
     y = arr[1]
-    return np.array([x + r * y * (1 - y), y])
+    x_new = np.mod(x + r * y * (1 - y), 1)
+    return np.array([x_new, y])
 
 def G(arr, r):
     x = arr[0]
     y = arr[1]
-    return np.array([x, y + r * x * (1 - x)])
+    y_new = np.mod(y + r * x * (1 - x), 1)
+    y_new = y_new - np.floor(y_new)
+    return np.array([x, y_new])
 
 def n_step_dynamic_system(n, x, y, r):
     result = np.zeros((n, 2))
@@ -36,26 +39,17 @@ def n_step_dynamic_system(n, x, y, r):
         # y_step = result[i - 1, 1] + r * result[i - 1, 0] * (1 - result[i - 1, 0])
         x_step, y_step = G(F(result[i-1, :], r), r)
         # x_step = result[i - 1, 0] * np.exp(r * (1 - result[i - 1, 1]))
-        x_step = x_step - np.floor(x_step)
-        y_step = y_step - np.floor(y_step)
 
         result[i, :] = [x_step, y_step]
     return result
 
 
-x, y = np.random.uniform(size=2)
-
-results = n_step_dynamic_system(1000, x, y, 4.1)
-plt.scatter(results[:, 0], results[:, 1])
-plt.show()
-# y_step = result[i - 1, 0]
-
 def do_training(PI_vectors_train, PI_vectors_test, y_H_train):
     X_H_train = PI_vectors_train
     X_H_test = PI_vectors_test
 
-    ada = AdaBoostClassifier(n_estimators=100, random_state=42).fit(X_H_train, y_H_train.ravel())
-    grad = GradientBoostingClassifier(n_estimators=100).fit(X_H_train, y_H_train.ravel())
+    ada = AdaBoostClassifier(n_estimators=1000, random_state=42).fit(X_H_train, y_H_train.ravel())
+    grad = GradientBoostingClassifier(n_estimators=1000).fit(X_H_train, y_H_train.ravel())
 
     y_H_hat_ada = ada.predict(X_H_test)
     y_H_hat_grad = grad.predict(X_H_test)
@@ -174,8 +168,8 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
     return reports_H0_ada, reports_H0_grad, reports_H1_ada, reports_H1_grad, reports_con_ada, reports_con_grad
 
 
-rs = [0.5, 0.9, 2, 0.1, 1.5]
-m, n = 100, 1000
+rs = [2, 3.5, 4, 4.1, 4.3]
+m, n = 400, 1000
 data = np.zeros((len(rs), m, n, 2))
 for i in range(len(rs)):
     r = rs[i]
@@ -184,4 +178,10 @@ for i in range(len(rs)):
         x, y = np.random.uniform(size=2)
         data[i, j, :, :] = n_step_dynamic_system(n, x, y, r)
 
-_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.005, kernel="gaussian", weighting="linear")
+#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="linear")
+#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="linear")
+#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="linear")
+_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="logistic")
+#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="logistic")
+_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="logistic")
+
