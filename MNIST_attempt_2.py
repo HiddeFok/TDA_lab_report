@@ -21,10 +21,10 @@ from sklearn.datasets import fetch_openml
 print("Loading data")
 X, y = fetch_openml('mnist_784', version=1, return_X_y=True)
 
-# ## we do some preprocessing. Namely:
-# # Recast the images into images
-# # We binerize it into 0.1 grayscale values
-# # Keep the x, y with non-zero values
+## we do some preprocessing. Namely:
+# Recast the images into images
+# We binerize it into 0.1 grayscale values
+# Keep the x, y with non-zero values
 # X[X>0] = 1
 # X = X.reshape((70000, 28, 28))
 #

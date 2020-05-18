@@ -122,6 +122,10 @@ def do_training(PI_vectors_train, PI_vectors_test, y_H_train):
     X_H_train = PI_vectors_train
     X_H_test = PI_vectors_test
 
+    print(PI_vectors_train)
+    print(PI_vectors_test)
+    print(y_H_train)
+
     gnb = GaussianNB().fit(X_H_train, y_H_train.ravel())
     lr = LogisticRegression(random_state=42, max_iter=1000).fit(X_H_train, y_H_train.ravel())
 
@@ -195,8 +199,10 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
             rips = Rips(verbose=False)
             dgms = rips.fit_transform(PI_data)
 
+
             PI_data_H0 = pim_0.transform(dgms[0])
             PI_data_H1 = pim_1.transform(dgms[1])
+
 
             PI_data_H1 = PI_data_H1.reshape(pixels)
             PI_data_H0 = PI_data_H0.reshape(pixels)
@@ -221,11 +227,15 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
     reports_H0_gnb, reports_H0_lr = do_analysis(y_test_H0, y_H0_hat_km, y_H0_hat_lr, labels)
     reports_H1_gnb, reports_H1_lr = do_analysis(y_test_H1, y_H1_hat_km, y_H1_hat_lr, labels)
 
-    # reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))
-    # reports_H0_lr.to_csv("results/{}_{}_{}_{}_H0_lr.csv".format(quality, spread, kernel, weighting))
-    # reports_H1_gnb.to_csv("results/{}_{}_{}_{}_H1_gnb.csv".format(quality, spread, kernel, weighting))
-    # reports_H1_lr.to_csv("results/{}_{}_{}_{}_H1_lr.csv".format(quality, spread, kernel, weighting))
+    reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))
+    reports_H0_lr.to_csv("results/{}_{}_{}_{}_H0_lr.csv".format(quality, spread, kernel, weighting))
+    reports_H1_gnb.to_csv("results/{}_{}_{}_{}_H1_gnb.csv".format(quality, spread, kernel, weighting))
+    reports_H1_lr.to_csv("results/{}_{}_{}_{}_H1_lr.csv".format(quality, spread, kernel, weighting))
 
+    print(reports_H0_gnb)
+    print(reports_H0_lr)
+    print(reports_H1_gnb)
+    print(reports_H1_lr)
     return reports_H0_gnb, reports_H0_lr, reports_H1_gnb, reports_H1_lr
 
 ## Now we apply Ripser and Persim to do the classification
@@ -234,44 +244,44 @@ data = gen_six_figures(n, m, V)
 epsilon = 0.1
 ax_range = (0 - epsilon, 1 + epsilon)
 ## create example of each shape
-for shape in data:
-    shape_data_ex = data[shape][0, :, :]
-    if shape != "circle":
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-
-        ax.scatter(
-            shape_data_ex[:, 0],
-            shape_data_ex[:, 1],
-            shape_data_ex[:, 2],
-        )
-        ax.set_xlabel('X Axis')
-        ax.set_ylabel('Y Axis')
-        ax.set_zlabel('Z Axis')
-
-        ax.set_xlim(ax_range)
-        ax.set_ylim(ax_range)
-        ax.set_zlim(ax_range)
-        plt.savefig("figures/{}_example.png".format(shape))
-    else:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        ax.scatter(
-            shape_data_ex[:, 0],
-            shape_data_ex[:, 1],
-        )
-        ax.set_xlabel('X Axis')
-        ax.set_ylabel('Y Axis')
-
-        ax.set_xlim(ax_range)
-        ax.set_ylim(ax_range)
-        plt.savefig("figures/{}_example.png".format(shape))
+# for shape in data:
+#     shape_data_ex = data[shape][0, :, :]
+#     if shape != "circle":
+#         fig = plt.figure()
+#         ax = fig.add_subplot(111, projection="3d")
+#
+#         ax.scatter(
+#             shape_data_ex[:, 0],
+#             shape_data_ex[:, 1],
+#             shape_data_ex[:, 2],
+#         )
+#         ax.set_xlabel('X Axis')
+#         ax.set_ylabel('Y Axis')
+#         ax.set_zlabel('Z Axis')
+#
+#         ax.set_xlim(ax_range)
+#         ax.set_ylim(ax_range)
+#         ax.set_zlim(ax_range)
+#         plt.savefig("figures/{}_example.png".format(shape))
+#     else:
+#         fig = plt.figure()
+#         ax = fig.add_subplot(111)
+#
+#         ax.scatter(
+#             shape_data_ex[:, 0],
+#             shape_data_ex[:, 1],
+#         )
+#         ax.set_xlabel('X Axis')
+#         ax.set_ylabel('Y Axis')
+#
+#         ax.set_xlim(ax_range)
+#         ax.set_ylim(ax_range)
+#         plt.savefig("figures/{}_example.png".format(shape))
 
 
 qualities = [5, 10, 25, 50]
 spreads = [0.05, 0.1, 0.2]
-kernels = ["gaussian", "laplace", "gamma"]
+kernels = ["gamma", "lognorm"]
 weightings = ["linear", "logistic"]
 
 for quality in tqdm(qualities):

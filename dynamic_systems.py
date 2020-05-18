@@ -169,7 +169,7 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
 
 
 rs = [2, 3.5, 4, 4.1, 4.3]
-m, n = 400, 1000
+m, n = 5, 1000
 data = np.zeros((len(rs), m, n, 2))
 for i in range(len(rs)):
     r = rs[i]
@@ -178,10 +178,38 @@ for i in range(len(rs)):
         x, y = np.random.uniform(size=2)
         data[i, j, :, :] = n_step_dynamic_system(n, x, y, r)
 
-#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="linear")
-#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="linear")
-#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="linear")
-_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="logistic")
-#_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="logistic")
-_, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="logistic")
+
+fig, ax = plt.subplots(1, 1)
+ax.scatter(data[0, 0, :, 0], data[0, 0, :, 1])
+ax.set_title("Typical result for r=2")
+plt.savefig("figures/2_dynamic.png")
+
+fig, ax = plt.subplots(1, 1)
+ax.scatter(data[1, 0, :, 0], data[1, 0, :, 1])
+ax.set_title("Typical result for r=3.5")
+plt.savefig("figures/35_dynamic.png")
+
+fig, ax = plt.subplots(1, 1)
+ax.scatter(data[2, 0, :, 0], data[2, 0, :, 1])
+ax.set_title("Typical result for r=4")
+plt.savefig("figures/4_dynamic.png")
+
+fig, ax = plt.subplots(1, 1)
+ax.scatter(data[3, 0, :, 0], data[3, 0, :, 1])
+ax.set_title("Typical result for r=4.1")
+plt.savefig("figures/41_dynamic.png")
+fig, ax = plt.subplots(1, 1)
+ax.scatter(data[4, 0, :, 0], data[4, 0, :, 1])
+ax.set_title("Typical result for r=4.3")
+plt.savefig("figures/43_dynamic.png")
+
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="linear")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="linear")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="linear")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="laplace", weighting="logistic")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gamma", weighting="logistic")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="gaussian", weighting="logistic")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="lognorm", weighting="logistic")
+# _, _, _, _, _, _ = do_full_run(data, quality=20, spread=0.05, kernel="lognorm", weighting="linear")
+
 
