@@ -37,8 +37,8 @@ width = 0.2
 x = np.arange(4)
 for i, weight in enumerate(weightings):
     fig, axs = plt.subplots(1, 1)
-    fig.set_figwidth(15)
-    fig.set_figheight(13)
+    fig.set_figwidth(8)
+    fig.set_figheight(6)
     axs.bar(x - width, acc_scores_H0_ada[weight], width, label="H0")
     axs.bar(x, acc_scores_H1_ada[weight], width, label="H1")
     axs.bar(x + width, acc_scores_con_ada[weight], width, label="H0 & H1")
@@ -46,7 +46,7 @@ for i, weight in enumerate(weightings):
     axs.set_xticks(x)
     axs.set_xticklabels(kernels)
     axs.set_yticks(np.arange(0, 1.1, 0.1))
-    axs.legend()
+    axs.legend(bbox_to_anchor=(0.95, 1), loc='upper left', ncol=1)
     axs.set_ylim((0, 1))
     axs.set_title("Accuracy of classification with AdaBoost and weighting {}".format(weight))
     plt.savefig("figures/accuracies_dynamic_ada_{}.svg".format(weight), format="svg")
@@ -58,8 +58,8 @@ width = 0.2
 x = np.arange(4)
 for i, weight in enumerate(weightings):
     fig, axs = plt.subplots(1, 1)
-    fig.set_figwidth(15)
-    fig.set_figheight(13)
+    fig.set_figwidth(8)
+    fig.set_figheight(6)
     axs.bar(x - width, acc_scores_H0_grad[weight], width, label="H0")
     axs.bar(x, acc_scores_H1_grad[weight], width, label="H1")
     axs.bar(x + width, acc_scores_con_grad[weight], width, label="H0 & H1")
@@ -67,7 +67,25 @@ for i, weight in enumerate(weightings):
     axs.set_xticks(x)
     axs.set_xticklabels(kernels)
     axs.set_yticks(np.arange(0, 1.1, 0.1))
-    axs.legend()
+    axs.legend(bbox_to_anchor=(0.95, 1), loc='upper left', ncol=1)
     axs.set_ylim((0, 1))
     axs.set_title("Accuracy of classification with Gradient Boosting and weighting {}".format(weight))
     plt.savefig("figures/accuracies_dynamic_grad_{}.svg".format(weight), format="svg")
+
+
+### Get best performing
+from os import listdir
+
+results = [file for file in listdir("results_dynamic")]
+
+best = []
+score = [0]
+for file in results:
+    data = pd.read_csv("results_dynamic/{}".format(file))
+    data = data[data.iloc[:, 0] == "accuracy"]["f1-score"].iloc[0]
+    if data > score[-1]:
+        best.append(file)
+        score.append(data)
+
+print(best)
+print(score)

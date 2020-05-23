@@ -225,6 +225,7 @@ def do_full_run(data, quality=50, spread=0.05, kernel="gaussian", weighting="lin
     y_H1_hat_km, y_H1_hat_lr = do_training(PI_vectors_H1_train, PI_vectors_H1_test, y_train_H1)
 
     reports_H0_gnb, reports_H0_lr = do_analysis(y_test_H0, y_H0_hat_km, y_H0_hat_lr, labels)
+    reports_H0_gnb, reports_H0_lr = do_analysis(y_test_H0, y_H0_hat_km, y_H0_hat_lr, labels)
     reports_H1_gnb, reports_H1_lr = do_analysis(y_test_H1, y_H1_hat_km, y_H1_hat_lr, labels)
 
     reports_H0_gnb.to_csv("results/{}_{}_{}_{}_H0_gnb.csv".format(quality, spread, kernel, weighting))

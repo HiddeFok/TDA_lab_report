@@ -35,8 +35,8 @@ for kern in kernels:
 for i, kern in enumerate(kernels):
     for j, weight in enumerate(weightings):
         fig, axs = plt.subplots(1, 1)
-        fig.set_figwidth(15)
-        fig.set_figheight(13)
+        fig.set_figwidth(8)
+        fig.set_figheight(6)
         axs.plot(spreads, acc_scores_H0_gnb[kern][weight], label="H0 Gaussian Naive Bayes")
         axs.plot(spreads, acc_scores_H1_gnb[kern][weight], label="H1 Gaussian Naive Bayes")
         axs.plot(spreads, acc_scores_H0_lr[kern][weight], label="H0 Logistic Regression")
@@ -73,8 +73,8 @@ for kern in kernels:
 for i, kern in enumerate(kernels):
     for j, weight in enumerate(weightings):
         fig, axs = plt.subplots(1, 1)
-        fig.set_figwidth(15)
-        fig.set_figheight(13)
+        fig.set_figwidth(8)
+        fig.set_figheight(6)
         axs.plot(qualities, acc_scores_H0_gnb[kern][weight], label="H0 Gaussian Naive Bayes")
         axs.plot(qualities, acc_scores_H1_gnb[kern][weight], label="H1 Gaussian Naive Bayes")
         axs.plot(qualities, acc_scores_H0_lr[kern][weight], label="H0 Logistic Regression")
@@ -85,3 +85,20 @@ for i, kern in enumerate(kernels):
         axs.set_xlabel("Resolution")
         axs.set_ylabel("Accuracy")
         plt.savefig("figures/accuracies_against_resolution_2_{}_{}.svg".format(kern, weight), format="svg")
+
+
+### Get best performing
+from os import listdir
+
+results = [file for file in listdir("results")]
+
+best = []
+score = [0]
+for file in results:
+    data = pd.read_csv("results/{}".format(file))["f1-score"].iloc[0]
+    if data > score[-1]:
+        best.append(file)
+        score.append(data)
+
+print(best)
+print(score)

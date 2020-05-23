@@ -33,8 +33,8 @@ con_pipeline.append(pd.read_csv("result_MNIST/MNIST_report_con_svm.csv")["f1-sco
 
 
 fig, axs = plt.subplots(1,1)
-fig.set_figwidth(24)
-fig.set_figheight(18)
+fig.set_figwidth(8)
+fig.set_figheight(6)
 width = 0.2
 x = np.arange(4)
 clfs = ["Logistic Regression", "Random Forest", "SGD", "SVM"]
