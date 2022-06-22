@@ -10,7 +10,7 @@ matplotlib == 3.0.3
 # C:\Users\Hidde\Documents\Uni\TDA\Lab_report\create_figure_summary.py: 2
 # C:\Users\Hidde\Documents\Uni\TDA\Lab_report\dynamic_systems.py: 4
 # C:\Users\Hidde\Documents\Uni\TDA\Lab_report\six_figures.py: 4
-numpy == 1.18.4
+numpy == 1.22.0
 
 # C:\Users\Hidde\Documents\Uni\TDA\Lab_report\MNIST_attempt_2.py: 12
 # C:\Users\Hidde\Documents\Uni\TDA\Lab_report\create_figure_summary.py: 1
